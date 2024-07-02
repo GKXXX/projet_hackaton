@@ -1,29 +1,55 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+
+const audioFiles = ["music1.mp3", "music2.mp3", "music3.mp3"];
 
 export default function Home() {
-  const src = "/api/stream?filename=music1.mp3"; // Remplacez "music1.mp3" par le nom de votre fichier MP3
   const [playing, setPlaying] = useState(false);
-
-  const audio = useMemo(() => {
-    const audioElement = new Audio(src);
-    audioElement.loop = true; // Lecture en boucle
-    return audioElement;
-  }, [src]);
+  const [currentFileIndex, setCurrentFileIndex] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+    }
+
+    const audio = audioRef.current;
+    audio.src = `/api/stream?music=${audioFiles[currentFileIndex]}`;
+
+    const handleTrackEnd = () => {
+      setCurrentFileIndex((prevIndex) => (prevIndex + 1) % audioFiles.length);
+    };
+
+    audio.addEventListener("ended", handleTrackEnd);
+
     if (playing) {
-      audio.play().catch((error) => {
-        console.error("Failed to play audio:", error);
-      });
-    } else {
-      audio.pause();
+      audio
+        .play()
+        .catch((error: string) =>
+          console.error("Failed to play audio:", error)
+        );
     }
 
     return () => {
-      audio.pause();
+      audio.removeEventListener("ended", handleTrackEnd);
     };
-  }, [audio, playing]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFileIndex]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      if (playing) {
+        audio
+          .play()
+          .catch((error: string) =>
+            console.error("Failed to play audio:", error)
+          );
+      } else {
+        audio.pause();
+      }
+    }
+  }, [playing]);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">

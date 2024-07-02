@@ -3,7 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 
 export const GET = async (request: NextRequest) => {
-  const filePath = path.join(process.cwd(), "public/music", "music1.mp3");
+  const params = request.nextUrl.searchParams;
+  const filePath = path.join(
+    process.cwd(),
+    "public/music",
+    params.get("music") as string
+  );
 
   console.log(filePath);
 
