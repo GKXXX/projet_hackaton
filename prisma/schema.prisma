@@ -1,0 +1,32 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Playlist {
+  PlaylistID   Int       @id @default(autoincrement())
+  Nom          String
+  Description  String?
+  Repository String
+  SlotID Int @map("slot_id")
+  Slot Slot @relation(fields: [SlotID],references: [SlotID],onDelete: NoAction)
+}
+
+model Slot {
+  SlotID   Int       @id @default(autoincrement())
+  StartTime  DateTime
+  EndTime    DateTime
+  WeekDay String
+  Playlists Playlist[]
+}
+
